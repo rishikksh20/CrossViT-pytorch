@@ -26,15 +26,15 @@ class Transformer(nn.Module):
 
 class MultiScaleTransformerEncoder(nn.Module):
 
-    def __init__(self, small_dim = 96, small_depth_n = 4, small_heads =3, small_dim_head = 32, small_mlp_dim = 384,
-                 large_dim = 192, large_depth_m = 1, large_heads = 3, large_dim_head = 64, large_mlp_dim = 768,
-                 cross_attn_depth_l = 1, cross_attn_heads = 3, dropout = 0.):
+    def __init__(self, small_dim = 96, small_depth = 4, small_heads =3, small_dim_head = 32, small_mlp_dim = 384,
+                 large_dim = 192, large_depth = 1, large_heads = 3, large_dim_head = 64, large_mlp_dim = 768,
+                 cross_attn_depth = 1, cross_attn_heads = 3, dropout = 0.):
         super().__init__()
-        self.transformer_enc_small = Transformer(small_dim, small_depth_n, small_heads, small_dim_head, small_mlp_dim)
-        self.transformer_enc_large = Transformer(large_dim, large_depth_m, large_heads, large_dim_head, large_mlp_dim)
+        self.transformer_enc_small = Transformer(small_dim, small_depth, small_heads, small_dim_head, small_mlp_dim)
+        self.transformer_enc_large = Transformer(large_dim, large_depth, large_heads, large_dim_head, large_mlp_dim)
 
         self.cross_attn_layers = nn.ModuleList([])
-        for _ in range(cross_attn_depth_l):
+        for _ in range(cross_attn_depth):
             self.cross_attn_layers.append(nn.ModuleList([
                 nn.Linear(small_dim, large_dim),
                 nn.Linear(large_dim, small_dim),
@@ -77,10 +77,9 @@ class MultiScaleTransformerEncoder(nn.Module):
 
 
 class CrossViT(nn.Module):
-    def __init__(self, image_size, channels, num_classes, patch_size_small = 14, patch_size_large = 16, small_dim = 96, large_dim = 192,
-                 small_depth = 4, large_depth = 1, cross_attn_depth = 1, multi_scale_enc_depth = 3, heads = 3,
-                 pool = 'cls', in_channels = 3, out_channels = 32, dim_head = 64, dropout = 0., emb_dropout = 0.,
-                 conv_kernel = 7, stride = 2, depth_kernel = 3, pool_kernel = 3, scale_dim = 4):
+    def __init__(self, image_size, channels, num_classes, patch_size_small = 14, patch_size_large = 16, small_dim = 96,
+                 large_dim = 192, small_depth = 4, large_depth = 1, cross_attn_depth = 1, multi_scale_enc_depth = 3,
+                 heads = 3, pool = 'cls', dropout = 0., emb_dropout = 0., scale_dim = 4):
         super().__init__()
 
         assert image_size % patch_size_small == 0, 'Image dimensions must be divisible by the patch size.'
@@ -113,7 +112,14 @@ class CrossViT(nn.Module):
 
         self.multi_scale_transformers = nn.ModuleList([])
         for _ in range(multi_scale_enc_depth):
-            self.multi_scale_transformers.append(MultiScaleTransformerEncoder())
+            self.multi_scale_transformers.append(MultiScaleTransformerEncoder(small_dim=small_dim, small_depth=small_depth,
+                                                                              small_heads=heads, small_dim_head=small_dim//heads,
+                                                                              small_mlp_dim=small_dim*scale_dim,
+                                                                              large_dim=large_dim, large_depth=large_depth,
+                                                                              large_heads=heads, large_dim_head=large_dim//heads,
+                                                                              large_mlp_dim=large_dim*scale_dim,
+                                                                              cross_attn_depth=cross_attn_depth, cross_attn_heads=heads,
+                                                                              dropout=dropout))
 
         self.pool = pool
         self.to_latent = nn.Identity()
