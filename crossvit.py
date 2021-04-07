@@ -78,7 +78,7 @@ class MultiScaleTransformerEncoder(nn.Module):
 
 class CrossViT(nn.Module):
     def __init__(self, image_size, channels, num_classes, patch_size_small = 14, patch_size_large = 16, small_dim = 96,
-                 large_dim = 192, small_depth = 4, large_depth = 1, cross_attn_depth = 1, multi_scale_enc_depth = 3,
+                 large_dim = 192, small_depth = 1, large_depth = 4, cross_attn_depth = 1, multi_scale_enc_depth = 3,
                  heads = 3, pool = 'cls', dropout = 0., emb_dropout = 0., scale_dim = 4):
         super().__init__()
 
