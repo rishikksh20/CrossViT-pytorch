@@ -18,10 +18,6 @@ print("Shape of out :", out.shape)      # [B, num_classes]
 
 ```
 
-
-## Note :
-* This Repo is Work In Progress.
-
 ## Citation
 ```
 @misc{chen2021crossvit,
