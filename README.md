@@ -3,12 +3,6 @@ This is an unofficial PyTorch implementation of [CrossViT: Cross-Attention Multi
 ![](assets/model.PNG)
 
 
-
-
-## Training
-```
-python train.py -c configs/default.yaml --name "name_of_exp"
-```
 ## Usage :
 ```python
 import torch
